@@ -1,0 +1,7 @@
+__pycache__
+*.py[cod]
+
+generated_features/
+metrics/
+predicted_anomalies_plots/
+

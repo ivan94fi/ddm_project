@@ -1,0 +1,139 @@
+Equally spaced:
+realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv
+realAWSCloudwatch/ec2_cpu_utilization_53ea38.csv
+realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv
+realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv
+realAWSCloudwatch/ec2_cpu_utilization_5f5533.csv
+realAWSCloudwatch/ec2_disk_write_bytes_c0d644.csv
+realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv
+realAWSCloudwatch/ec2_cpu_utilization_c6585a.csv
+realAWSCloudwatch/grok_asg_anomaly.csv
+realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv
+realKnownCause/cpu_utilization_asg_misconfiguration.csv
+realKnownCause/nyc_taxi.csv
+
+Non equally spaced:
+realAWSCloudwatch/ec2_cpu_utilization_ac20cd.csv
+realAWSCloudwatch/ec2_disk_write_bytes_1ef3de.csv
+realAWSCloudwatch/ec2_network_in_5abac7.csv
+realAWSCloudwatch/ec2_cpu_utilization_825cc2.csv
+realAWSCloudwatch/ec2_network_in_257a54.csv
+realAWSCloudwatch/rds_cpu_utilization_cc0c53.csv
+realAWSCloudwatch/elb_request_count_8c0756.csv
+realKnownCause/machine_temperature_system_failure.csv
+realKnownCause/rogue_agent_key_hold.csv
+realKnownCause/ec2_request_latency_system_failure.csv
+realKnownCause/rogue_agent_key_updown.csv
+realKnownCause/ambient_temperature_system_failure.csv
+
+=====================================================
+
+realAWSCloudwatch/ec2_cpu_utilization_ac20cd.csv
+0 days 00:05:00: 4029
+0 days 00:15:00: 1
+0 days 00:20:00: 1
+realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_cpu_utilization_53ea38.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_disk_write_bytes_1ef3de.csv
+0 days 00:05:00: 4716
+0 days 01:01:00: 1
+0 days 00:00:00: 11
+0 days 00:04:00: 1
+realAWSCloudwatch/ec2_network_in_5abac7.csv
+0 days 00:05:00: 4716
+0 days 01:04:00: 1
+0 days 00:00:00: 11
+0 days 00:01:00: 1
+realAWSCloudwatch/ec2_cpu_utilization_825cc2.csv
+0 days 00:05:00: 4029
+0 days 00:10:00: 2
+realAWSCloudwatch/ec2_cpu_utilization_77c1ca.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_network_in_257a54.csv
+0 days 00:05:00: 4029
+0 days 00:10:00: 2
+realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_cpu_utilization_5f5533.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_disk_write_bytes_c0d644.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/rds_cpu_utilization_cc0c53.csv
+0 days 00:05:00: 4030
+0 days 00:10:00: 1
+realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/ec2_cpu_utilization_c6585a.csv
+0 days 00:05:00: 4031
+realAWSCloudwatch/elb_request_count_8c0756.csv
+0 days 00:05:00: 4023
+0 days 00:10:00: 8
+realAWSCloudwatch/grok_asg_anomaly.csv
+0 days 00:05:00: 4620
+realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv
+0 days 00:05:00: 1242
+realKnownCause/cpu_utilization_asg_misconfiguration.csv
+0 days 00:05:00: 18049
+realKnownCause/machine_temperature_system_failure.csv
+0 days 00:05:00: 22693
+-1 days +23:05:00: 1
+realKnownCause/rogue_agent_key_hold.csv
+0 days 00:05:00: 1790
+0 days 00:10:00: 47
+0 days 19:00:00: 1
+0 days 00:20:00: 8
+0 days 00:30:00: 2
+0 days 00:40:00: 1
+0 days 14:40:00: 1
+0 days 00:15:00: 2
+0 days 00:25:00: 2
+0 days 00:35:00: 6
+0 days 16:30:00: 1
+0 days 21:10:00: 1
+0 days 03:40:00: 1
+0 days 00:50:00: 1
+0 days 16:40:00: 1
+1 days 21:35:00: 1
+0 days 03:00:00: 1
+0 days 05:00:00: 1
+0 days 06:00:00: 1
+0 days 03:10:00: 1
+0 days 01:10:00: 1
+0 days 00:55:00: 1
+1 days 16:05:00: 1
+1 days 02:45:00: 1
+0 days 12:20:00: 1
+0 days 18:40:00: 1
+0 days 01:15:00: 1
+0 days 09:35:00: 1
+0 days 01:25:00: 1
+0 days 02:30:00: 1
+0 days 08:40:00: 1
+realKnownCause/ec2_request_latency_system_failure.csv
+0 days 00:05:00: 4017
+0 days 01:04:00: 1
+0 days 00:00:00: 11
+0 days 00:01:00: 1
+0 days 00:10:00: 1
+realKnownCause/rogue_agent_key_updown.csv
+0 days 00:05:00: 5304
+0 days 00:10:00: 6
+0 days 00:15:00: 1
+0 days 00:20:00: 2
+0 days 00:50:00: 1
+realKnownCause/ambient_temperature_system_failure.csv
+0 days 01:00:00: 7256
+0 days 02:00:00: 1
+1 days 08:00:00: 1
+2 days 00:00:00: 1
+6 days 16:00:00: 1
+4 days 00:00:00: 1
+2 days 23:00:00: 1
+1 days 06:00:00: 1
+0 days 03:00:00: 1
+0 days 15:00:00: 1
+7 days 06:00:00: 1
+realKnownCause/nyc_taxi.csv
+0 days 00:30:00: 10319
