@@ -1,3 +1,18 @@
+"""
+This script encapsulates the process of grid search for the ml techinques.
+
+After retrieving (or extracting) the features, a predefined set of models is
+fitted. The obtained models are used to generate predictions and these
+predictions are evaluated against the ground truth labels for anomalies.
+
+Plots are generated to report the positions of anomalies as defined by the
+various models, and to show the evolution of the computed metrics as the
+model parameters change.
+"""
+
+# TODO: separare le fasi dello script, magari in classi diverse.
+# TODO: refactor parte iniziale su definizione dei parametri.
+
 import argparse
 import collections
 import logging
@@ -15,22 +30,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from tqdm import tqdm
 
-from features_generation import FeatureGenerator
-from metrics import get_nab_score, get_simple_metrics
-from nab_dataset_reader import NABReader
-
-"""
-greed_search_ml.py.
-
-Example script to apply ml techinques to NAB dataset.
-"""
-
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.ml.metrics import get_nab_score, get_simple_metrics
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 Result = collections.namedtuple('Result', ["model", "pred"])
 
-
 logger = logging.getLogger(__name__)
 
+# TODO: separare le due cose.
 logger.warn(
     "Ad ora se si leggono le metriche non si possono fare i plot con le"
     + "predizioni. Bisognerebbe dividere le due cose e fare in modo da poter"
@@ -38,10 +46,8 @@ logger.warn(
 )
 
 parser = argparse.ArgumentParser()
-parser.add_argument("dataset_name")
+parser.add_argument("dataset_index", type=int, choices=range(6))
 args = parser.parse_args()
-
-dataset_name = args.dataset_name
 
 dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
                  "machine_temperature_system_failure.csv",
@@ -49,7 +55,8 @@ dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
                  "rds_cpu_utilization_e47b3b.csv",
                  "grok_asg_anomaly.csv",
                  "elb_request_count_8c0756.csv"]
-dataset_name = dataset_names[int(dataset_name)]
+
+dataset_name = dataset_names[args.dataset_index]
 print("Chosen dataset:", dataset_name)
 seed = 42
 use_iforest = True
@@ -68,7 +75,23 @@ models_classes = {iforest_name: IsolationForest, ocsvm_name: OneClassSVM}
 columns = ["precision", "recall", "f_score", "nab_score"]
 
 
-def _fmt_param(d):
+def _format_parameters(d):
+    """Format a dictionary of parameters to a string.
+
+    Parameters
+    ----------
+    d : dict
+        The dictionary to format.
+
+    Returns
+    -------
+    str
+        A string representation of input, useful as a key for dictionaries and
+        as title in plots.
+
+    Example: {"param1": 0.01, "param2": 67} -> "param1_0.01__param2_67"
+
+    """
     finalstr = ""
     for k, v in d.items():
         if k == 'behaviour':
@@ -81,7 +104,24 @@ def _fmt_param(d):
     return finalstr.strip('_')
 
 
-def _make_plots(model, anomalies, params):
+def _make_plots(model_name, anomalies, params):
+    """Plot original data with found anomalies. Highlight anomaly windows.
+
+    Parameters
+    ----------
+    model_name : str
+        Name of the model used to compute the anomalies.
+    anomalies : pd.Series
+        Subset of the original data labeled as anomaly by the model.
+    params : str
+        Formatted string for parameters used in the model.
+
+    Returns
+    -------
+    matplotlib.Axes
+        The axis containing the plots.
+
+    """
     fig, ax = plt.subplots()
     ax.plot(df.index, df.value, label='Original data',
             linestyle='--', alpha=0.5)
@@ -175,7 +215,7 @@ if needs_computing:
         for params in tqdm(param_grids[model_name], desc=desc):
             model = model_class(**params)  # construct a model instance
             pred = model.fit_predict(X)
-            param_str = _fmt_param(params)
+            param_str = _format_parameters(params)
             predictions[model_name][param_str] = Result(model=model, pred=pred)
 
     """
@@ -200,13 +240,13 @@ if needs_computing:
     # metrics is a dict of dataframes containing metrics for both models.
     # E.g. metrics["ocsvm"] is a dataframe with params string on rows and
     # columns for each of the metrics
-    for model, data in predictions.items():
+    for model_name, data in predictions.items():
         curr_metrics = {}
         for param_str, result in data.items():
             nab_score = get_nab_score(gt_windows, result.pred)
             curr_metrics[param_str] = get_simple_metrics(
                 gt_pred, result.pred) + (nab_score,)
-        metrics[model] = pd.DataFrame(curr_metrics, index=columns).T
+        metrics[model_name] = pd.DataFrame(curr_metrics, index=columns).T
 
     do_write = True
     if os.path.isfile(metrics_fname):
@@ -226,12 +266,12 @@ if needs_computing:
         # files = glob.glob('tmp/*.png')
         # for f in files:
         #     os.remove(f)
-        for model, data in predictions.items():
+        for model_name, data in predictions.items():
             for param_str, result in data.items():
                 anomalies = tdf.value[result.pred == -1]
                 # Plot original data with gt anomaly windows and
                 # found anomalies
-                ax = _make_plots(model, anomalies, param_str)
+                ax = _make_plots(model_name, anomalies, param_str)
                 plt.show()
                 # plt.savefig("tmp/" + model + " " + param_str + ".png")
                 # plt.clf()
@@ -254,12 +294,6 @@ for model_name, model_metrics in metrics.items():
     fig_fname = "metrics/" + dataset_name[:-4] + "_" + model_name + ".svg"
     plt.savefig(fig_fname)
 
-"""
-Da qui si vede che il parametro migliore per la contaminazione è 0.02
-(ci sta perché sono 0.015% le anomalie)
-
-Gamma per ocsvm è 0.05 mi pare.
-"""
 
 plt.show()
 

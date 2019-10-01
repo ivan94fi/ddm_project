@@ -1,8 +1,9 @@
-# noqa
+"""File to plot the label windows for nab dataset."""
+
 import matplotlib.pyplot as plt
 from pandas.plotting import register_matplotlib_converters
 
-from nab_dataset_reader import NABReader
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 register_matplotlib_converters()
 
@@ -15,22 +16,20 @@ df = reader.data.get(dataset_name)
 labels = reader.labels.get(dataset_name)
 labels_windows = reader.label_windows.get(dataset_name)
 print(labels_windows)
-raise SystemExit
-# print(dataset_name, labels_windows[1] - labels_windows[0])
 
-# Print size of windows
-# for key in reader.labels._dict.keys():
-#     df = reader.data.get(key)
-#     if df is None:
-#         continue
-#     labels_windows = reader.label_windows.get(key)
-#     string = key + ":"
-#     for win in labels_windows:
-#         string = string + " " + str(len(df.loc[win[0]:win[1]]))
-#     print(string)
-#     print("")
-# raise Exception
+# Print size of windows for every dataset.
+for key in reader.labels._dict.keys():
+    df = reader.data.get(key)
+    if df is None:
+        continue
+    labels_windows = reader.label_windows.get(key)
+    string = key + ":"
+    for win in labels_windows:
+        string = string + " " + str(len(df.loc[win[0]:win[1]]))
+    print(string)
+    print("")
 
+# Plot anomalies and their windows.
 for key in reader.labels._dict.keys():
     labels = reader.labels.get(key)
     labels_windows = reader.label_windows.get(key)

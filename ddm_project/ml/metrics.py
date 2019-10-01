@@ -1,45 +1,40 @@
+"""This module contains the functions used to evaluate the AD models."""
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import precision_recall_fscore_support
 
-from nab_dataset_reader import NABReader
-
 MAX_TP = 0.9866142981514305
 TP_WEIGHT = 0.11
 
-"""
-Sostanzialmente non si fa mai lo score di una relative position < -1 perché
-si contano solo punti dentro window. Se siamo fuori da una window, si usa la
-funzione della window precedente.
-L'if con np.abs in scaled_sigmoid non importa (basta > 1, tanto si checkano
-solo punti in window.)
-"""
-
-"""
-Algoritmo per calcolo score:
-
-for each point o labeled as outlier by the model
-    if o è in una finestra
-        win = finestra di o
-        score = score con peso appropriato
-    else o è fuori da una finestra:
-        win = finestra precedente ad o
-        if win non esiste
-            score = -1
-        else score con peso appropriato
-    salva score in una lista_score
-score finale = somma lista_score + peso falsi negativi
-"""
-
 
 def get_simple_metrics(gt_pred, pred):
-    # Return precision, recall, F-score.
+    """Compute precision, recall and F-score.
+
+    Parameters
+    ----------
+    gt_pred : np.ndarray
+        The ground truth anomalies. Anomalies are marked as -1, non anomalous
+        observations are marked as 1.
+    pred : np.ndarray
+        The computed anomalies. Uses the same convention as `gt_pred`.
+
+    Returns
+    -------
+    tuple
+        The metrics as 3 float values: (precision, recall, F-score).
+
+    """
     res = precision_recall_fscore_support(gt_pred, pred, beta=1.0, labels=[-1])
     return tuple(a.item() for a in res)[:3]
 
 
 def get_nab_score(gt_windows, pred):
-    """Short summary.
+    """Compute NAB score.
+
+    Compute a slight variation of the NAB score as descripted in 'Evaluating
+    Real-time Anomaly Detection Algorithms - the Numenta Anomaly Benchmark' by
+    Alexander Lavin and Subutai Ahmad.
 
     Parameters
     ----------
@@ -59,13 +54,11 @@ def get_nab_score(gt_windows, pred):
 
     # Handle anomalies before first window -> False positives
     early_anomalies_score = (pred[:gt_windows[0][0]] < 0).sum()
-    # print("early:", early_anomalies_score)
 
     # Handle false negatives (window without detection)
     windows_without_detections = [
         (pred[w[0]:w[1]] != -1).all() for w in gt_windows]
     false_negatives_score = sum(windows_without_detections)
-    # print("fn score:", false_negatives_score)
 
     for i, window in enumerate(gt_windows):
         last_window = True if i == windows_number - 1 else False
@@ -87,30 +80,90 @@ def get_nab_score(gt_windows, pred):
             scores.append(score)
 
     anomalies_score = sum(scores)
-    # print("anomalies:", anomalies_score)
+
     return anomalies_score - early_anomalies_score - false_negatives_score
 
 
 def sigmoid(x):
+    """Compute a sigmod function.
+
+    Parameters
+    ----------
+    x : float
+        The point where to evaluate the sigmoid.
+
+    Returns
+    -------
+    float
+        The sigmoid value in x.
+
+    """
     return 1 / (1 + np.exp(-x))
 
 
 def scaled_sigmoid(y):
+    """Scale the sigmoid according to the definition in the original paper.
+
+    Parameters
+    ----------
+    y : float
+        Relative position inside the window.
+
+    Returns
+    -------
+    float
+        The scaled sigmoid value.
+
+    """
+    # Very far from right edge of the window. Simply return -1: the point is
+    # considered a false negative.
     if y > 3:
         return -1.
     return 2 * sigmoid(-5 * y) - 1
 
 
 def get_raw_score(y):
+    """Get the unnormalized NAB score.
+
+    Parameters
+    ----------
+    y : float
+        Relative position inside the window.
+
+    Returns
+    -------
+    float
+        The unnormalized NAB score.
+
+    """
     return np.clip(scaled_sigmoid(y) / MAX_TP, -1, 1)
 
 
 def get_relative_position(pos, win_right, win_size):
-    scaled_pos = - (win_right - pos) / win_size
-    return scaled_pos
+    """Transform the absolute position of the anomaly in a relative position.
+
+    Parameters
+    ----------
+    pos : int
+        The absolute position of the anomaly. It is the index of the anomaly in
+        the data.
+    win_right : int
+        The right edge of the window.
+    win_size : int
+        The size of the current window.
+
+    Returns
+    -------
+    float
+        The relative position of the anomaly at index `pos`.
+
+    """
+    return - (win_right - pos) / win_size
 
 
 if __name__ == '__main__':
+    from ddm_project.readers.nab_dataset_reader import NABReader
+
     np.random.seed(42)
     reader = NABReader()
     reader.load_data()

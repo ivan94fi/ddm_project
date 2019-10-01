@@ -13,7 +13,9 @@ import re
 
 import pandas as pd
 
-from settings import nab_data_dir, nab_label_path, nab_label_windows_path
+from ddm_project.settings import (
+    nab_data_dir, nab_label_path, nab_label_windows_path
+)
 
 
 class LabelsDict(object):

@@ -1,4 +1,19 @@
+"""
+Example script to apply machine learning techinques for anomaly detection
+to NAB dataset.
+
+The scripts does the following actions:
+    * Read dataset.
+    * Compute features and apply PCA.
+    * Fit several OneClassSVM models with different parameters.
+    * Plot the anomalies found for a qualitative evaluation.
+    * Calculate precision, recall and F-score for each method, for a
+      quantitative evaluation.
+    * Calculate NAB score.
+"""
+
 import collections
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,16 +26,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from tqdm import tqdm
 
-from features_generation import FeatureGenerator
-from metrics import get_nab_score, get_simple_metrics
-from nab_dataset_reader import NABReader
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.ml.metrics import get_nab_score, get_simple_metrics
+from ddm_project.readers.nab_dataset_reader import NABReader
 
-"""
-try_nab_ml.py.
+deprecation_message = "This script is outdated. The new version is the "\
+                      + "script `grid_search_ml.py` in the `ml` package"
 
-Example script to apply ml techinques to NAB dataset.
-"""
-
+warnings.warn(deprecation_message, DeprecationWarning)
 
 seed = 42
 use_iforest = True
@@ -37,6 +50,22 @@ if not models_to_use:
 
 
 def _fmt_param(d):
+    """Format a dictionary of parameter to a string.
+
+    Parameters
+    ----------
+    d : dict
+        The dictionary to format.
+
+    Returns
+    -------
+    str
+        A string representation of input, useful as a key for dictionaries and
+        as title in plots.
+
+    Example: {"param1": 0.01, "param2": 67} -> "param1_0.01__param2_67"
+
+    """
     finalstr = ""
     for k, v in d.items():
         if k == 'behaviour':
@@ -51,7 +80,6 @@ def _fmt_param(d):
 
 register_matplotlib_converters()
 
-
 reader = NABReader()
 reader.load_data()
 reader.load_labels()
@@ -62,7 +90,6 @@ reader.load_labels()
 # dataset_name = "elb_request_count_8c0756.csv"
 # dataset_name = "iio_us-east-1_i-a2eb1cd9_NetworkIn.csv"
 dataset_name = "machine_temperature_system_failure.csv"
-
 
 df = reader.data.get(dataset_name)
 labels = reader.labels.get(dataset_name)
@@ -79,7 +106,7 @@ X = feature_generator.get(read=True)
 pca = PCA(n_components=50)
 X = pd.DataFrame(pca.fit_transform(X), index=X.index)
 
-
+raise SystemExit("Interrupted")
 models_classes = {iforest_name: IsolationForest, ocsvm_name: OneClassSVM}
 
 # Parameters for grid search

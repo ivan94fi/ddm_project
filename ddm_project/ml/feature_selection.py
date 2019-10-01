@@ -1,16 +1,21 @@
-import sys
+"""
+Playground for feature selection.
+
+This script is used to generate various plot regardin the feature selection
+pipeline (correlation matrix plot, histogram of correlations, explained
+variance for different values of retained components in PCA, etc).
+"""
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 from pandas.plotting import register_matplotlib_converters
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from features_generation import FeatureGenerator
-from nab_dataset_reader import NABReader
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 register_matplotlib_converters()
 
@@ -18,13 +23,12 @@ reader = NABReader()
 reader.load_data()
 reader.load_labels()
 
-dataset_name = "iio_us-east-1_i-a2eb1cd9_NetworkIn.csv"
-dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
-                 "machine_temperature_system_failure.csv",
-                 "ec2_cpu_utilization_fe7f93.csv",
-                 "rds_cpu_utilization_e47b3b.csv",
-                 "grok_asg_anomaly.csv",
-                 "elb_request_count_8c0756.csv"]
+# dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
+#                  "machine_temperature_system_failure.csv",
+#                  "ec2_cpu_utilization_fe7f93.csv",
+#                  "rds_cpu_utilization_e47b3b.csv",
+#                  "grok_asg_anomaly.csv",
+#                  "elb_request_count_8c0756.csv"]
 dataset_name = "grok_asg_anomaly.csv"
 
 df = reader.data.get(dataset_name)
@@ -52,7 +56,8 @@ if plot_correlation:
     # Plot histogram of correlations
     corrmat = X.corr(method='pearson')
     tril_idx = np.tril_indices_from(corrmat, -1)
-    # hist, bins = np.histogram(corrmat.values[tril_idx], range=(-1, 1), bins=100)
+    # hist, bins = np.histogram(
+    #   corrmat.values[tril_idx], range=(-1, 1), bins=100)
     # plt.bar(bins[:-1], hist)  <- occhio non funziona
     values = corrmat.values[tril_idx].copy()
 
@@ -60,7 +65,7 @@ if plot_correlation:
                    range=(-1, 1), label="before pca")
     # plt.figure()
     # values = values[~np.isnan(values)]
-    # ret = plt.hist(values, bins=500, density=True, <- prova con density.. uguale
+    # ret = plt.hist(values, bins=500, density=True, <- non cambia nulla
     #                range=(-1, 1), label="before pca")
     plt.show()
 
@@ -129,8 +134,16 @@ correlation_matrix = False
 if correlation_matrix:
     corrmat = X.corr(method='pearson')
     corrmat = np.abs(corrmat)
-    # sns.heatmap(corrmat * 100, cbar=False, annot=True, xticklabels=False,
-    #             yticklabels=False, square=False, fmt='.0f', annot_kws={'size': 4})
+    #     sns.heatmap(
+    #     corrmat * 100,
+    #     cbar=False,
+    #     annot=True,
+    #     xticklabels=False,
+    #     yticklabels=False,
+    #     square=False,
+    #     fmt=".0f",
+    #     annot_kws={"size": 4},
+    # )
     # plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
     # plt.show()
     # plt.savefig("heatmap.svg", transparent=True,

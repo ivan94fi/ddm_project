@@ -1,3 +1,9 @@
+"""
+Second attempt for NAB scoring.
+
+See metrics.py for the final implementation.
+"""
+
 import matplotlib.pyplot as plt
 import numpy as np
 

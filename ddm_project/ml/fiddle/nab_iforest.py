@@ -1,8 +1,15 @@
 """
-try_nab_iforest.py.
+Example script to apply Isolation Forests for anomaly detection to NAB dataset.
 
-Example script to apply IsolationForest for anomaly detection to NAB dataset.
+The scripts does the following actions:
+    * Read dataset.
+    * Compute features and apply PCA.
+    * Fit several IsolationForest models with different parameters.
+    * Plot the anomalies found for a qualitative evaluation.
+    * Calculate precision, recall and F-score for each method, for a
+      quantitative evaluation.
 """
+
 import glob
 import os
 
@@ -17,10 +24,12 @@ from sklearn.model_selection import ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
-from features_generation import FeatureGenerator
-from nab_dataset_reader import NABReader
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 register_matplotlib_converters()
+
+seed = 42
 
 reader = NABReader()
 reader.load_data()
@@ -40,11 +49,6 @@ X = feature_generator.get(read=True)
 pca = PCA(n_components=50)
 X = pd.DataFrame(pca.fit_transform(X), index=X.index)
 
-#####################
-# raise InterruptedError("*" * 35 + " Manually interrupted " + "*" * 35)
-#####################
-
-seed = 42
 
 # param_grid = {'nu': [0.001, 0.0015, 0.002, 0.003, 0.005, 0.01]}
 param_grid = {'nu': np.arange(0, 0.1, 0.005)[1:]}
@@ -81,15 +85,16 @@ for pred, params in tqdm(pred_list):
     title_str = "nu_{:.3f}".format(params["nu"])  # 'nu_' + str(params['nu'])
     plt.title(title_str)
     plt.legend()
-    # plt.show()
-    plt.savefig("tmp/" + title_str + ".png")
-    plt.clf()
+    plt.show()
+    # plt.savefig("tmp/" + title_str + ".png")
+    # plt.clf()
 
     results.append(precision_recall_fscore_support(
         y_gt, pred, beta=1.0, labels=[-1]))
 
 for res in results:
-    # print("precision: {:.4f} {:.4f} recall: {:.4f} {:.4f} F1: {:.4f} {:.4f}".format(
+    # print("precision: {:.4f} {:.4f} recall: {:.4f} {:.4f} F1:
+    #       {:.4f} {:.4f}".format(
     #     res[0][0], res[0][1], res[1][0], res[1][1], res[2][0], res[2][1]))
     print("precision: {:.4f} recall: {:.4f} F1: {:.4f}".format(
         res[0][0], res[1][0], res[2][0]))

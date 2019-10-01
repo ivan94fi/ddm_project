@@ -1,32 +1,28 @@
+"""
+Script to iterate the chosen datasets from NAb and extract their features.
+
+The features are saved in the `metrics` directory as pkl files.
+"""
+
 import logging
 
 from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
-from features_generation import FeatureGenerator
-from nab_dataset_reader import NABReader
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 reader = NABReader()
 reader.load_data()
 reader.load_labels()
 
-
-def _get_loggers():
-    return [logging.getLogger(name)
-            for name in logging.root.manager.loggerDict]
-
-
-tsfresh_df_functions_logger = logging.getLogger(
-    "tsfresh.utilities.dataframe_functions")
-tsfresh_signifiance_tests_logger = logging.getLogger(
-    "tsfresh.feature_selection.significance_tests"
-)
-tsfresh_relevance_logger = logging.getLogger(
-    "tsfresh.feature_selection.relevance"
-)
-tsfresh_df_functions_logger.setLevel(logging.ERROR)
-tsfresh_signifiance_tests_logger.setLevel(logging.ERROR)
-tsfresh_relevance_logger.setLevel(logging.ERROR)
+# Disable warnings for tsresh features extraction.
+logging.getLogger(
+    "tsfresh.utilities.dataframe_functions").setLevel(logging.ERROR)
+logging.getLogger(
+    "tsfresh.feature_selection.significance_tests").setLevel(logging.ERROR)
+logging.getLogger(
+    "tsfresh.feature_selection.relevance").setLevel(logging.ERROR)
 
 
 dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",

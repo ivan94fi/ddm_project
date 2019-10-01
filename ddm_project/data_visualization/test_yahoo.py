@@ -1,3 +1,5 @@
+"""Plots for yahoo dataset."""
+
 import glob
 import re
 from pprint import pprint  # noqa
@@ -5,6 +7,8 @@ from pprint import pprint  # noqa
 import matplotlib.pyplot as plt
 import pandas as pd
 from natsort import natsorted
+
+from ddm_project.settings import datasets_dir
 
 # import numpy as np
 # import statsmodels.api as sm
@@ -17,7 +21,7 @@ from natsort import natsorted
 
 chosen = [1, 8, 9, 13, 18, 23, 24, 27, 29, 38, 54, 65]
 
-root_dir = "../../datasets/yahoo_ad_dataset/"
+root_dir = datasets_dir + "/yahoo_ad_dataset/"
 root_dir = root_dir + "ydata-labeled-time-series-anomalies-v1_0/A1Benchmark"
 
 data_paths = glob.glob(root_dir + "/*.csv")
@@ -44,6 +48,6 @@ for i, p in enumerate(data_paths):
                marker="x", color="orange", s=80, zorder=10)
     name = p.split('/')[-1]
     ax.set_title(name)
-    plt.savefig("yahoo_df_and_anomalies_plots/plot_" + name + ".svg")
-    plt.close(fig)
+    # plt.savefig("yahoo_df_and_anomalies_plots/plot_" + name + ".svg")
+    # plt.close(fig)
     plt.show()

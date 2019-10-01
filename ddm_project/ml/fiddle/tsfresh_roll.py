@@ -1,22 +1,31 @@
-import sys
+"""
+Testing the behaviour of tsfresh feature extraction function.
+
+Trying make_forecasting_frame and extract_features to transform a univariate
+time series in a n_measurements x n_features matrix suitable for machine
+learning algorithms.
+"""
 import time
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-import statsmodels.api as sm
-import statsmodels.tsa.api as tsa
 from sklearn.metrics import classification_report
-from sklearn.preprocessing import (MaxAbsScaler, MinMaxScaler, RobustScaler,
-                                   StandardScaler)
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import OneClassSVM
-from tsfresh import (extract_features, extract_relevant_features,
-                     select_features)
-from tsfresh.utilities.dataframe_functions import (impute,
-                                                   make_forecasting_frame,
-                                                   roll_time_series)
+from tsfresh import (  # extract_relevant_features,
+    extract_features, select_features
+)
+from tsfresh.utilities.dataframe_functions import (  # , roll_time_series
+    impute, make_forecasting_frame
+)
 
-from nab_dataset_reader import NABReader
+from ddm_project.readers.nab_dataset_reader import NABReader
+
+# import statsmodels.api as sm
+# import statsmodels.tsa.api as tsa
+# from sklearn.preprocessing import (
+#     MaxAbsScaler, MinMaxScaler, RobustScaler, StandardScaler
+# )
 
 reader = NABReader()
 reader.load_data()

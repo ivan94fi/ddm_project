@@ -1,9 +1,18 @@
+"""
+This file was originally used to plot the datasets from NAB.
+
+Now it also contains some statistical plots (autocorrelation plot,
+partial autocorrelation plot, lag plots)
+"""
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import statsmodels.api as sm
 from pandas.plotting import lag_plot  # , autocorrelation_plot
 
-root_dir = "../../datasets/nab_dataset/data/"
+from ddm_project.settings import datasets_dir
+
+root_dir = datasets_dir + "/nab_dataset/data/"
 
 dataset = "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv"
 
@@ -15,13 +24,15 @@ df = pd.read_csv(root_dir + dataset,
 # plt.figure()
 # autocorrelation_plot(df.value.tolist())
 # plt.show()
-plt.gca().set_xlim(right=500)
+# plt.gca().set_xlim(right=500)
 lags = 500
 fig, axes = plt.subplots(2, 1, sharex=True)
-sm.graphics.tsa.plot_acf(df['value'], lags=lags, ax=axes[0])
-sm.graphics.tsa.plot_pacf(df['value'], lags=lags, ax=axes[1])
-# plt.show()
-# raise KeyboardInterrupt
+sm.graphics.tsa.plot_acf(df['value'], lags=lags, ax=axes[0], marker=None)
+sm.graphics.tsa.plot_pacf(df['value'], lags=lags, ax=axes[1], marker=None)
+# sm.graphics.tsa.plot_acf(df['value'], lags=lags, marker=None)
+# sm.graphics.tsa.plot_pacf(df['value'], lags=lags, marker=None)
+plt.show()
+raise SystemExit
 
 fig, axes = plt.subplots(2, 5)
 axes = axes.ravel()

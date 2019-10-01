@@ -1,24 +1,23 @@
 """
-try_nab_ml.py.
+Example script to apply one-class SVMs for anomaly detection to NAB dataset.
 
-Example script to apply ml techinques to NAB dataset.
+The scripts does the following actions:
+    * Read dataset.
+    * Compute features and apply PCA.
+    * Fit several OneClassSVM models with different parameters.
+    * Plot the anomalies found for a qualitative evaluation.
 """
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 from sklearn.decomposition import PCA
-from sklearn.ensemble import IsolationForest
 from sklearn.model_selection import ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from tqdm import tqdm
 
-from features_generation import FeatureGenerator
-from nab_dataset_reader import NABReader
-
-# from sklearn.metrics import classification_report
-
+from ddm_project.ml.feature_generation import FeatureGenerator
+from ddm_project.readers.nab_dataset_reader import NABReader
 
 register_matplotlib_converters()
 
@@ -40,11 +39,6 @@ X = feature_generator.get(read=True)
 
 pca = PCA(n_components=50)
 X = pd.DataFrame(pca.fit_transform(X), index=X.index)
-
-#####################
-# raise InterruptedError("*" * 35 + " Manually interrupted " + "*" * 35)
-#####################
-
 
 # Fit One-Class SVM
 contamination = 0.002
@@ -79,6 +73,6 @@ for pred, params in tqdm(pred_list):
     title_str = 'nu_' + str(params['nu']) + '__gamma_' + str(params['gamma'])
     plt.title(title_str)
     plt.legend()
-    # plt.show()
-    plt.savefig("tmp/" + title_str + ".png")
-    plt.clf()
+    plt.show()
+    # plt.savefig("tmp/" + title_str + ".png")
+    # plt.clf()

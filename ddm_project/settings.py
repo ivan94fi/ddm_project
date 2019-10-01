@@ -5,7 +5,7 @@ Define global variables.
 """
 import os
 
-data_root_dir = ".."
+data_root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 datasets_dir = os.path.join(data_root_dir, "datasets")
 
 # NAB dataset

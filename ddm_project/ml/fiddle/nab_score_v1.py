@@ -1,6 +1,16 @@
-# noqa
+"""
+Nab scoring first version.
+
+First attempts to understand nab scoring. This does not represent the final
+implementation of the scoring function.
+"""
+
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+warnings.warn("Experimental code")
 
 A_TP = 1.
 A_FP = 1.

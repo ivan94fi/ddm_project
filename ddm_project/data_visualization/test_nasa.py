@@ -1,10 +1,15 @@
+"""Script to plot nasa dataset time-series."""
+
 import glob
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from natsort import natsorted
 
-root_dir = "nasa_valve_dataset/Waveform Data/COL 1 Time COL 2 Current"
+from ddm_project.settings import datasets_dir
+
+root_dir = datasets_dir\
+    + "/nasa_valve_dataset/Waveform Data/COL 1 Time COL 2 Current"
 
 # print(glob.glob(root_dir + "/*.CSV"))
 

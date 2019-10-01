@@ -1,8 +1,13 @@
 """
-features_generation.py.
+This module defines a class used to generate features from time-series.
 
-Feature generation classes.
+The generated features include time-lags up to a certain order and features
+extracted with the `tsfresh` package. TODO: use featuretools to extract
+temporal features.
+
+The features are saved on disk after the first computation for efficiency.
 """
+
 import os
 import time
 
@@ -43,6 +48,10 @@ class FeatureGenerator(object):
     ----------
     features : pandas.DataFrame
         The computed features are stored in this attribute.
+    features_dir: str
+        Directory for storing the computed features.
+    path: str
+        Full filename of the generated features pickle file.
 
     """
 
@@ -59,7 +68,6 @@ class FeatureGenerator(object):
         self.scaler = scaler
         self.features_dir = 'generated_features'
         self.path = os.path.join(self.features_dir, self.fname)
-        self._warning_filter = "ignore"  # "default"
 
     def get(self, read=True):
         """Compute or read features from file.

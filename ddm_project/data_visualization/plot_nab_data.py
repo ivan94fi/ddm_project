@@ -1,3 +1,23 @@
+"""
+File used to visualize various aspects of nab datasets.
+
+It was used to determine the time delatas between the observations in
+time-series.
+
+Notes:
+realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv -> ok
+realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv -> ok
+realAWSCloudwatch/grok_asg_anomaly.csv -> ok
+realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv -> ok
+
+realKnownCause/machine_temperature_system_failure.csv -> file corretto -> ok
+realAWSCloudwatch/elb_request_count_8c0756.csv -> linear interpolation -> ok
+
+realKnownCause/ambient_temperature_system_failure.csv ->
+    10 delta diversi -> necessaria correzione stagionale con STL -> X
+
+"""
+
 import glob
 import json
 import re
@@ -8,24 +28,18 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 
+from ddm_project.settings import datasets_dir
+
 register_matplotlib_converters()
 
-"""
-realAWSCloudwatch/ec2_cpu_utilization_fe7f93.csv -> ok
-realAWSCloudwatch/rds_cpu_utilization_e47b3b.csv -> ok
-realAWSCloudwatch/grok_asg_anomaly.csv -> ok
-realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv -> ok
 
-realKnownCause/machine_temperature_system_failure.csv -> file corretto -> ok
-realAWSCloudwatch/elb_request_count_8c0756.csv linear interpolation -> ok
-
-realKnownCause/ambient_temperature_system_failure.csv ->
-    10 delta diversi -> necessaria correzione stagionale con STL
-"""
+def get_key(path):
+    """Get key for `labels` dict."""
+    return re.search(r"[^\/]+\/[^\/]+\.csv", path).group(0)
 
 
-root_dir = "../../datasets/nab_dataset/data"
-label_dir = "../../datasets/nab_dataset/labels"
+root_dir = datasets_dir + "/nab_dataset/data"
+label_dir = datasets_dir + "/nab_dataset/labels"
 label_file = "combined_labels.json"
 
 label_path = label_dir + "/" + label_file
@@ -34,39 +48,35 @@ with open(label_path) as f:
 
 data_paths = glob.glob(root_dir + "/realAWSCloudwatch/*.csv")
 data_paths += glob.glob(root_dir + "/realKnownCause/*.csv")
+
 pattern = re.compile(r'\/([\d\w_-]*)\.')
 data_filenames = [re.search(pattern, p).group(1) for p in data_paths]
 
 # ===========================
 _fname = data_paths[15]
-_name = _fname.split('/', 5)[-1]
-anomalies = labels[_name]
+key = get_key(_fname)
+anomalies = labels[key]
 df = pd.read_csv(_fname, parse_dates=['timestamp'], index_col='timestamp')
 values = df.loc[[pd.to_datetime(a) for a in anomalies]]
 plt.plot(df.index.to_pydatetime(), df['value'])
 plt.scatter(anomalies, values, marker="x", color="orange", s=80, zorder=10)
 
-plt.title(_name)
+plt.title(key)
 plt.show()
-raise SystemExit
+# raise SystemExit
 # ===========================
-
 
 plot = True
 if plot:
     fig, axes = plt.subplots(4, 6)
 
-# df = pd.read_csv(data_paths[0], parse_dates=[
-#                  'timestamp'], index_col='timestamp')
-# first_delta = df.index[1] - df.index[0]
-# print("first delta:", first_delta)
-#
-# raise SystemExit
 all_deltas = {}
 equally_spaced = []
 non_equally_spaced = []
 for i, path in enumerate(data_paths):
-    name = path.split('/', 5)[-1]
+    name = get_key(path)  # path.split('/', 5)[-1]
+    # if name.split("/")[1].startswith("old_"):
+    #     continue
     df = pd.read_csv(path, parse_dates=['timestamp'], index_col='timestamp')
     deltas = defaultdict(lambda: 0)
     first_delta = df.index[1] - df.index[0]
