@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from ddm_project.ml.metrics import TP_WEIGHT, get_nab_score, get_raw_score
+from ddm_project.metrics.metrics import TP_WEIGHT, get_nab_score, get_raw_score
 
 if __name__ == '__main__':
     gt_windows = [(3, 6), (9, 13), (24, 29)]

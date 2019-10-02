@@ -30,8 +30,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from tqdm import tqdm
 
+from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.ml.feature_generation import FeatureGenerator
-from ddm_project.ml.metrics import get_nab_score, get_simple_metrics
 from ddm_project.readers.nab_dataset_reader import NABReader
 
 Result = collections.namedtuple('Result', ["model", "pred"])

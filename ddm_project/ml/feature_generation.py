@@ -96,6 +96,7 @@ class FeatureGenerator(object):
         return self.features
 
     def compute(self):
+        """Compute features and store them on disk."""
         tqdm.write("computing features")
         if not self.use_lags and not self.use_tsfresh:
             raise ValueError(
@@ -121,6 +122,7 @@ class FeatureGenerator(object):
         self.save_on_disk()
 
     def compute_lag_features(self):
+        """Add lag features."""
         value = self.df[self.ts_col]
         shifts = range(1, self.max_timeshift)
         lags = [value.shift(i).rename("{}_lag_{}".format(self.ts_col, i))

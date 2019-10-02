@@ -1,6 +1,5 @@
 """
-Example script to apply machine learning techinques for anomaly detection
-to NAB dataset.
+Example script to apply machine learning techinques for AD to NAB dataset.
 
 The scripts does the following actions:
     * Read dataset.
@@ -26,8 +25,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import OneClassSVM
 from tqdm import tqdm
 
+from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.ml.feature_generation import FeatureGenerator
-from ddm_project.ml.metrics import get_nab_score, get_simple_metrics
 from ddm_project.readers.nab_dataset_reader import NABReader
 
 deprecation_message = "This script is outdated. The new version is the "\

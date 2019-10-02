@@ -1,7 +1,7 @@
 """
 Script to iterate the chosen datasets from NAb and extract their features.
 
-The features are saved in the `metrics` directory as pkl files.
+The features are saved in the `generated_features` directory as pkl files.
 """
 
 import logging
