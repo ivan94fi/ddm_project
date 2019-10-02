@@ -6,6 +6,7 @@ partial autocorrelation plot, lag plots)
 """
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from pandas.plotting import lag_plot  # , autocorrelation_plot
@@ -16,8 +17,10 @@ root_dir = datasets_dir + "/nab_dataset/data/"
 
 dataset = "realAWSCloudwatch/ec2_cpu_utilization_24ae8d.csv"
 
-df = pd.read_csv(root_dir + dataset,
-                 parse_dates=['timestamp'], index_col='timestamp')
+# df = pd.read_csv(root_dir + dataset,
+#                  parse_dates=['timestamp'], index_col='timestamp')
+
+df = pd.DataFrame({"value": np.random.randn(100)})
 
 # plot_acf(df['value'], lags=range(len(df)), zero=False,
 #   title="statsmodel",fft=True)
@@ -25,7 +28,7 @@ df = pd.read_csv(root_dir + dataset,
 # autocorrelation_plot(df.value.tolist())
 # plt.show()
 # plt.gca().set_xlim(right=500)
-lags = 500
+lags = 20  # 500
 fig, axes = plt.subplots(2, 1, sharex=True)
 sm.graphics.tsa.plot_acf(df['value'], lags=lags, ax=axes[0], marker=None)
 sm.graphics.tsa.plot_pacf(df['value'], lags=lags, ax=axes[1], marker=None)
