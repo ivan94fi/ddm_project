@@ -5,7 +5,7 @@ from pandas.plotting import register_matplotlib_converters
 from statsmodels.datasets import co2
 
 from ddm_project.arima.decomposition import (
-    decompose, get_seasonality_strength, get_trend_strength
+    decompose, seasonality_strength, trend_strength
 )
 
 register_matplotlib_converters()
@@ -20,8 +20,8 @@ ma_decomposition = decompose(data, method="MA")
 decomposition = decompose(data)
 robust_decomposition = decompose(data, robust=True)
 
-print("Seasonality strength:", get_seasonality_strength(data))
-print("Trend strength:", get_trend_strength(data))
+print("Seasonality strength:", seasonality_strength(data))
+print("Trend strength:", trend_strength(data))
 
 fig = decomposition.plot()
 fig.suptitle('Non-robust STL')

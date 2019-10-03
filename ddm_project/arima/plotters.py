@@ -1,8 +1,6 @@
 """Collection of functions to plot time series data."""
 
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import statsmodels.api as sm
 
 
@@ -18,12 +16,18 @@ def plot_pacf(series, ax=None, lags=None, marker=None):
     return fig
 
 
-def time_plot(series, ax=None):
+def time_plot(series, ax=None, label=None, scale=False, **kwargs):
     """Plot the values of the series."""
     if ax is None:
         ax = plt.gca()
-    label = None
-    if series.name is not None:
-        label = series.name
-    ax.plot(series, label=label)
+    if label is None:
+        try:
+            label = series.name
+        except AttributeError:
+            pass
+    if scale:
+        scaled_series = (series - series.mean()) / series.std()
+    else:
+        scaled_series = series
+    ax.plot(scaled_series, label=label, **kwargs)
     return ax
