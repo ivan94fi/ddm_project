@@ -14,8 +14,9 @@ Metodo:
 - checkresiduals: AIC_c/ljung-box/ACF/uncorrelated/zero mean
 """
 
+import warnings
+
 import matplotlib.pyplot as plt
-import statsmodels.tsa.api as tsa
 from pandas.plotting import register_matplotlib_converters
 from pmdarima.arima import ARIMA, auto_arima
 
@@ -36,7 +37,8 @@ do_description = False
 do_plots = False
 do_acf_pacf_box_ljung = False
 do_unit_root_tests_diff = False
-do_seas_decomposition = True
+do_seas_decomposition = False
+do_fit = True
 #####################
 
 reader = NABReader()
@@ -45,6 +47,11 @@ reader.load_labels()
 
 # Load data
 df = reader.data.get("iio_us-east-1_i-a2eb1cd9_NetworkIn.csv")
+
+# Train-test split
+train_percentage = 0.8
+train_len = int(train_percentage * len(df))
+train, test = df.value[:train_len], df.value[train_len:]
 
 # Describe data
 if do_description:
@@ -92,13 +99,14 @@ if do_unit_root_tests_diff:
     adf(diff).format()
     kpss(diff).format()
 
-# seasonality decomposition
+# Seasonality decomposition
 if do_seas_decomposition:
     # 60	1440	10080
     freq = df.index.inferred_freq
     print("Inferred frequency:", freq)
     period = int(60 / 5)
-    print("Seasonality strength:", seasonality_strength(df.value, period=period))
+    print(
+        "Seasonality strength:", seasonality_strength(df.value, period=period))
     print("Trend strength:", trend_strength(df.value, period=period))
 
     ma_decomposition = decompose(df.value, method="MA", period=period)
@@ -110,6 +118,47 @@ if do_seas_decomposition:
     plt.gcf().suptitle('Moving average seasonality decomposition')
     robust_stl_decomposition.plot()
     plt.gcf().suptitle('Robust STL seasonality decomposition')
+
+# Fit ARIMA model
+if do_fit:
+    period = int(60 / 5)
+    auto_fit = True
+    if auto_fit:
+        arima = auto_arima(
+            train,
+            stepwise=True,
+            trace=1,
+            m=period,
+            information_criterion="aicc",
+            seasonal=False,
+            error_action="ignore",
+            suppress_warnings=True,
+        )
+        print(arima.summary())
+    else:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            arima = ARIMA(order=(4, 1, 4), seasonal_order=None)
+            arima.fit(train)
+
+    # Diagnostics plot
+    arima.plot_diagnostics(lags=50)
+    box_ljung(arima.resid(), nlags=20).format()
+    plt.gcf().suptitle('Diagnostics Plot')
+
+    # Plot fitted values and forecasts
+    predictions = arima.predict(n_periods=test.shape[0])
+    fitted_values = arima.predict_in_sample()
+    plt.figure()
+    plt.plot(df.value.index[train_len:], test,
+             '--', color='C0', label="test set")
+    plt.plot(df.value.index[train_len:], predictions,
+             '--', color='C1', label="forecasted values")
+    plt.plot(df.value.index[:train_len], train, color='C0', label="train set")
+    plt.plot(df.value.index[:train_len - 1], fitted_values,
+             color='C1', label="fitted values")
+    plt.legend()
+    plt.title("Fitted values and forecasts")
 
 
 plt.show()
