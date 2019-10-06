@@ -1,7 +1,7 @@
+"""Utilities functions."""
+
 import matplotlib.pyplot as plt
 import pandas as pd
-
-"""Utilities functions."""
 
 
 def _format_parameters(d):
@@ -83,12 +83,12 @@ def _make_plots(
     return ax
 
 
-def get_gt_arrays(index, labels, labels_windows):
+def get_gt_arrays(index, win_index, labels, labels_windows):
     """Construct ground truth arrays from labels and window labels."""
     gt_pred = pd.Series(1, index)
     gt_pred.loc[labels] = -1
     gt_windows = []
-    idf = pd.DataFrame(index=index)
+    idf = pd.DataFrame(index=win_index)
     idf['idx'] = idf.reset_index().index
     for win in labels_windows:
         win_start = idf.idx.at[win[0]]

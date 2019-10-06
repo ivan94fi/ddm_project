@@ -235,7 +235,8 @@ if do_evaluate:
     # thresh = 7.05362 * (10 ** 6)
     # pred = np.where(np.abs(arima.resid()) > thresh, -1, 1)
 
-    gt_pred, gt_windows = get_gt_arrays(df.index, labels, labels_windows)
+    gt_pred, gt_windows = get_gt_arrays(
+        df.index, df.index, labels, labels_windows)
 
     # Compute metrics
     metrics_columns = ["precision", "recall", "f_score", "nab_score"]

@@ -33,7 +33,9 @@ from tqdm import tqdm
 from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.ml.feature_generation import FeatureGenerator
 from ddm_project.readers.nab_dataset_reader import NABReader
-from ddm_project.utils.utils import _format_parameters, _make_plots
+from ddm_project.utils.utils import (
+    _format_parameters, _make_plots, get_gt_arrays
+)
 
 Result = collections.namedtuple('Result', ["model", "pred"])
 
@@ -97,18 +99,10 @@ X = feature_generator.get(read=True)
 pca = PCA(n_components=50)
 X = pd.DataFrame(pca.fit_transform(X), index=X.index)
 
-# Construct ground truth arrays from labels and window labels  #TODO: use utils
-tdf = df.loc[X.index, :]
-gt_pred = pd.Series(1, tdf.index)
-gt_pred.loc[labels] = -1
-
-gt_windows = []
-idf = pd.DataFrame(index=df.index)
-idf['idx'] = idf.reset_index().index
-for win in labels_windows:
-    win_start = idf.idx.at[win[0]]
-    win_end = idf.idx.at[win[1]]
-    gt_windows.append((win_start, win_end))
+# Construct ground truth arrays from labels and window labels
+tdf = df.loc[X.index, :]  # Truncated df. Includes only the usable indexes
+gt_pred, gt_windows = get_gt_arrays(
+    tdf.index, df.index, labels, labels_windows)
 
 read_metrics = True
 needs_computing = True
@@ -120,6 +114,7 @@ if read_metrics:
         needs_computing = False
         print("Metrics read from disk")
     except FileNotFoundError:
+        print("Metrics not found on disk. Recomputing.")
         needs_computing = True
 
 if needs_computing:
