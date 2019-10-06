@@ -1,6 +1,6 @@
 """Module used to find the optimal parameters for ARIMA models.
 
-Metodo:
+Methodology:
 - load
 - describe
 - time plot
@@ -14,9 +14,12 @@ Metodo:
 - checkresiduals: AIC_c/ljung-box/ACF/uncorrelated/zero mean
 """
 
+import argparse
+import collections
 import warnings
 
 import matplotlib.pyplot as plt
+import numpy as np
 from pandas.plotting import register_matplotlib_converters
 from pmdarima.arima import ARIMA, auto_arima
 
@@ -28,9 +31,25 @@ from ddm_project.arima.statistical_tests import adf, box_ljung, kpss
 from ddm_project.arima.transformers import (
     boxcox_transform, difference, log_transform
 )
+from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.readers.nab_dataset_reader import NABReader
+from ddm_project.utils.utils import _make_plots, get_gt_arrays
 
 register_matplotlib_converters()
+
+parser = argparse.ArgumentParser()
+parser.add_argument("dataset_index", type=int, choices=range(6))
+args = parser.parse_args()
+
+dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
+                 "machine_temperature_system_failure.csv",
+                 "ec2_cpu_utilization_fe7f93.csv",
+                 "rds_cpu_utilization_e47b3b.csv",
+                 "grok_asg_anomaly.csv",
+                 "elb_request_count_8c0756.csv"]
+
+dataset_name = dataset_names[args.dataset_index]
+print("Chosen dataset:", dataset_name)
 
 #####################
 do_description = False
@@ -38,15 +57,18 @@ do_plots = False
 do_acf_pacf_box_ljung = False
 do_unit_root_tests_diff = False
 do_seas_decomposition = False
-do_fit = True
+do_fit = False
+do_evaluate = True
 #####################
 
 reader = NABReader()
 reader.load_data()
 reader.load_labels()
 
-# Load data
-df = reader.data.get("iio_us-east-1_i-a2eb1cd9_NetworkIn.csv")
+# Load data and labels
+df = reader.data.get(dataset_name)
+labels = reader.labels.get(dataset_name)
+labels_windows = reader.label_windows.get(dataset_name)
 
 # Train-test split
 train_percentage = 0.8
@@ -145,6 +167,18 @@ if do_fit:
     arima.plot_diagnostics(lags=50)
     box_ljung(arima.resid(), nlags=20).format()
     plt.gcf().suptitle('Diagnostics Plot')
+    plt.figure()
+    plt.plot(df.value.index[:train_len - 1],
+             np.abs(arima.resid()), label="abs(residuals)")
+    plt.plot(df.value, label="data", alpha=0.5)
+    # fig, axes = plt.subplots(3, 1, sharex=True)
+    # axes[0].plot(arima.resid(), label="residuals")
+    # axes[1].plot(arima.resid()**2, label="residuals^2")
+    # axes[2].plot(np.abs(arima.resid()), label="abs(residuals)")
+    # for ax in axes:
+    #     ax.legend()
+    plt.legend()
+    plt.gcf().suptitle('Residuals Plot')
 
     # Plot fitted values and forecasts
     predictions = arima.predict(n_periods=test.shape[0])
@@ -158,7 +192,68 @@ if do_fit:
     plt.plot(df.value.index[:train_len - 1], fitted_values,
              color='C1', label="fitted values")
     plt.legend()
-    plt.title("Fitted values and forecasts")
+    plt.gcf().suptitle("Fitted values and forecasts")
 
+# Evaluate the fit residuals to identify outliers.
+if do_evaluate:
+    # Re-fit the model on the entire data.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        arima = ARIMA(order=(4, 1, 4), seasonal_order=None)
+        # arima = ARIMA(order=arima.order, seasonal_order=arima.seasonal_order)
+        arima.fit(df.value)
+
+    # Binary search to find optimal thresh
+    # contamination = len(labels) / len(labels_windows)
+    contamination = 0.015
+    expected_anomalies = contamination * len(df.value)
+    print("expected_anomalies", expected_anomalies)
+    found_anomalies = len(df.value)
+    upper = arima.resid().max()
+    thresh = upper / 2
+    lower = 0
+
+    i = 0
+    max_iter = 32
+    while i < max_iter:
+        pred = np.where(np.abs(arima.resid()) > thresh, -1, 1)
+        found_anomalies = (pred == -1).sum()
+        error = found_anomalies - expected_anomalies
+        if 0 <= error <= 1:
+            print("finished")
+            break
+        if found_anomalies < expected_anomalies:
+            # Decrement threshold
+            upper = thresh
+            thresh = thresh - (thresh - lower) / 2
+        else:
+            # Increment threshold
+            lower = thresh
+            thresh = thresh + (upper - thresh) / 2
+        i += 1
+
+    # thresh = 7.05362 * (10 ** 6)
+    # pred = np.where(np.abs(arima.resid()) > thresh, -1, 1)
+
+    gt_pred, gt_windows = get_gt_arrays(df.index, labels, labels_windows)
+
+    # Compute metrics
+    metrics_columns = ["precision", "recall", "f_score", "nab_score"]
+    Metrics = collections.namedtuple("Metrics", metrics_columns)
+
+    # for t in range(int(thresh) - 5000000, int(thresh) + 5000000, 1000000):
+    for t in np.linspace(0, arima.resid().max(), num=20):
+        pred = np.where(np.abs(arima.resid()) > t, -1, 1)
+        nab_score = get_nab_score(gt_windows, pred)
+        simple_metrics = get_simple_metrics(gt_pred[:-1], pred)
+        metrics = simple_metrics + (nab_score,)
+        metrics = Metrics(*metrics)
+        print("thresh {:.2f}: {}".format(t, metrics))
+
+        anomalies = df.value[:-1][pred == -1]
+        ax = _make_plots(df, df, labels, labels_windows, "", anomalies, "")
+        ax.set_title("threshold={} - optimal threshold={}".format(t, thresh))
+
+    plt.show()
 
 plt.show()

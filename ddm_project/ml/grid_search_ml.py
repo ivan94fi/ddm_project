@@ -33,20 +33,23 @@ from tqdm import tqdm
 from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.ml.feature_generation import FeatureGenerator
 from ddm_project.readers.nab_dataset_reader import NABReader
+from ddm_project.utils.utils import _format_parameters, _make_plots
 
 Result = collections.namedtuple('Result', ["model", "pred"])
 
 logger = logging.getLogger(__name__)
 
 # TODO: separare le due cose.
-logger.warn(
-    "Ad ora se si leggono le metriche non si possono fare i plot con le"
-    + "predizioni. Bisognerebbe dividere le due cose e fare in modo da poter"
-    + "usare le pred anche se non si calcolano le metriche."
+logger.warning(
+    "Ad ora se si leggono le metriche non si possono fare i plot con le "
+    "predizioni. Bisognerebbe dividere le due cose e fare in modo da poter "
+    "usare le pred anche se non si calcolano le metriche."
 )
 
 parser = argparse.ArgumentParser()
 parser.add_argument("dataset_index", type=int, choices=range(6))
+parser.add_argument("--iforest", action="store_true")
+parser.add_argument("--ocsvm", action="store_true")
 args = parser.parse_args()
 
 dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
@@ -58,95 +61,24 @@ dataset_names = ["iio_us-east-1_i-a2eb1cd9_NetworkIn.csv",
 
 dataset_name = dataset_names[args.dataset_index]
 print("Chosen dataset:", dataset_name)
-seed = 42
-use_iforest = True
-use_ocsvm = True
 iforest_name = 'iforest'
 ocsvm_name = 'ocsvm'
 models_to_use = []
-if use_iforest:
+if args.iforest:
     models_to_use.append(iforest_name)
-if use_ocsvm:
+if args.ocsvm:
     models_to_use.append(ocsvm_name)
 if not models_to_use:
     raise ValueError("At least a model must be used.")
 models_classes = {iforest_name: IsolationForest, ocsvm_name: OneClassSVM}
 
-columns = ["precision", "recall", "f_score", "nab_score"]
-
-
-def _format_parameters(d):
-    """Format a dictionary of parameters to a string.
-
-    Parameters
-    ----------
-    d : dict
-        The dictionary to format.
-
-    Returns
-    -------
-    str
-        A string representation of input, useful as a key for dictionaries and
-        as title in plots.
-
-    Example: {"param1": 0.01, "param2": 67} -> "param1_0.01__param2_67"
-
-    """
-    finalstr = ""
-    for k, v in d.items():
-        if k == 'behaviour':
-            continue
-        if type(v) == str:
-            pstr = str(k) + '_' + str(v)
-        else:
-            pstr = "{}_{:.4f}".format(k, v)
-        finalstr = finalstr + pstr + "__"
-    return finalstr.strip('_')
-
-
-def _make_plots(model_name, anomalies, params):
-    """Plot original data with found anomalies. Highlight anomaly windows.
-
-    Parameters
-    ----------
-    model_name : str
-        Name of the model used to compute the anomalies.
-    anomalies : pd.Series
-        Subset of the original data labeled as anomaly by the model.
-    params : str
-        Formatted string for parameters used in the model.
-
-    Returns
-    -------
-    matplotlib.Axes
-        The axis containing the plots.
-
-    """
-    fig, ax = plt.subplots()
-    ax.plot(df.index, df.value, label='Original data',
-            linestyle='--', alpha=0.5)
-    ax.plot(tdf.index, tdf.value, label='Used data', color='C0')
-    ax.plot(anomalies, 'x', label="Predicted anomalies")
-    ax.plot(labels, tdf.loc[labels], 'o',
-            markersize=5, label="Real anomalies")
-    y_min, y_max = ax.get_ylim()
-    for win in labels_windows:
-        ax.fill_between(win, y_min, y_max, color='r', alpha=0.1)
-        # plt.plot(win, tdf.loc[win],
-        #          '^', markersize=5, label="anomalies windows")
-    ax.set_ylim(y_min, y_max)
-    ax.title(model + " " + params)
-    ax.legend()
-    return ax
-
+metrics_columns = ["precision", "recall", "f_score", "nab_score"]
 
 register_matplotlib_converters()
-
 
 reader = NABReader()
 reader.load_data()
 reader.load_labels()
-
 
 # Get dataset and labels
 df = reader.data.get(dataset_name)
@@ -165,7 +97,7 @@ X = feature_generator.get(read=True)
 pca = PCA(n_components=50)
 X = pd.DataFrame(pca.fit_transform(X), index=X.index)
 
-# Construct ground truth arrays from labels and window labels
+# Construct ground truth arrays from labels and window labels  #TODO: use utils
 tdf = df.loc[X.index, :]
 gt_pred = pd.Series(1, tdf.index)
 gt_pred.loc[labels] = -1
@@ -246,7 +178,8 @@ if needs_computing:
             nab_score = get_nab_score(gt_windows, result.pred)
             curr_metrics[param_str] = get_simple_metrics(
                 gt_pred, result.pred) + (nab_score,)
-        metrics[model_name] = pd.DataFrame(curr_metrics, index=columns).T
+        metrics[model_name] = pd.DataFrame(
+            curr_metrics, index=metrics_columns).T
 
     do_write = True
     if os.path.isfile(metrics_fname):
@@ -271,7 +204,8 @@ if needs_computing:
                 anomalies = tdf.value[result.pred == -1]
                 # Plot original data with gt anomaly windows and
                 # found anomalies
-                ax = _make_plots(model_name, anomalies, param_str)
+                ax = _make_plots(df, tdf, labels, labels_windows,
+                                 model_name, anomalies, param_str)
                 plt.show()
                 # plt.savefig("tmp/" + model + " " + param_str + ".png")
                 # plt.clf()
@@ -284,7 +218,7 @@ for model_name, model_metrics in metrics.items():
     plt.figure(figsize=(9.6, 6.0))
     # plt.figure()
     plt.xticks(rotation=30, ha='right', size='xx-small')
-    for c in columns:
+    for c in metrics_columns:
         plt.plot(c, data=model_metrics)
     plt.grid(axis='x', color='gray', linestyle='--', linewidth=1, alpha=0.5)
     plt.legend()
