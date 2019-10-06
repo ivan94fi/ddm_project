@@ -30,7 +30,7 @@ from ddm_project.ml.feature_generation import FeatureGenerator
 from ddm_project.readers.nab_dataset_reader import NABReader
 
 deprecation_message = "This script is outdated. The new version is the "\
-                      + "script `grid_search_ml.py` in the `ml` package"
+                      + "script `grid_search.py` in the `ml` package"
 
 warnings.warn(deprecation_message, DeprecationWarning)
 
