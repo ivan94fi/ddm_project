@@ -118,9 +118,6 @@ for model_name in models_to_use:
     metrics[model_name] = metrics_generator.get(
         predictions[model_name], gt_pred, gt_windows)
 
-# FIXME: cambiare cartelle preditctions e metrics aggiungendo prefisso
-#       generated_*  => cambiare anche nel gitignore
-
 # Plot original data with gt anomaly windows and found anomalies
 if args.plot_predictions:
     for model_name, model_predictions in predictions.items():

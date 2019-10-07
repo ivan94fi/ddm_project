@@ -15,7 +15,7 @@ class PredictionsGenerator(object):
     """Class to perform grid search on machine learning models."""
 
     def __init__(self, model_class, model_name, parameters, dataset_name,
-                 directory="predictions", filename=None):
+                 directory="generated_predictions", filename=None):
         self.model_class = model_class
         self.model_name = model_name
         self.parameters = parameters
@@ -73,7 +73,7 @@ class MetricsGenerator(object):
     """Compute metrics from predictions grid."""
 
     def __init__(self, model_name, dataset_name,
-                 directory="metrics", filename=None):
+                 directory="generated_metrics", filename=None):
         self.directory = directory
         self.filename = filename
         self.model_name = model_name

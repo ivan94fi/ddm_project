@@ -2,6 +2,6 @@ __pycache__
 *.py[cod]
 
 generated_features/
-ddm_project/ml/metrics/
+generated_metrics/
+generated_predictions/
 predicted_anomalies_plots/
-predictions/
