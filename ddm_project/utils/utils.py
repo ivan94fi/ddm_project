@@ -33,7 +33,7 @@ def _format_parameters(d):
     return finalstr.strip('_')
 
 
-def _make_plots(
+def make_predictions_plots(
     df, tdf, labels, labels_windows, model_name, anomalies, params
 ):
     """Plot original data with found anomalies. Highlight anomaly windows.

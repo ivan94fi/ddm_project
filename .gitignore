@@ -4,3 +4,4 @@ __pycache__
 generated_features/
 ddm_project/ml/metrics/
 predicted_anomalies_plots/
+predictions/
