@@ -33,7 +33,7 @@ from ddm_project.arima.transformers import (
 )
 from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.readers.nab_dataset_reader import NABReader
-from ddm_project.utils.utils import _make_plots, get_gt_arrays
+from ddm_project.utils.utils import get_gt_arrays, make_predictions_plots
 
 register_matplotlib_converters()
 
@@ -235,7 +235,8 @@ if do_evaluate:
     # thresh = 7.05362 * (10 ** 6)
     # pred = np.where(np.abs(arima.resid()) > thresh, -1, 1)
 
-    gt_pred, gt_windows = get_gt_arrays(df.index, labels, labels_windows)
+    gt_pred, gt_windows = get_gt_arrays(
+        df.index, df.index, labels, labels_windows)
 
     # Compute metrics
     metrics_columns = ["precision", "recall", "f_score", "nab_score"]
@@ -251,7 +252,8 @@ if do_evaluate:
         print("thresh {:.2f}: {}".format(t, metrics))
 
         anomalies = df.value[:-1][pred == -1]
-        ax = _make_plots(df, df, labels, labels_windows, "", anomalies, "")
+        ax = make_predictions_plots(
+            df, df, labels, labels_windows, "", anomalies, "")
         ax.set_title("threshold={} - optimal threshold={}".format(t, thresh))
 
     plt.show()

@@ -167,6 +167,8 @@ class FeatureGenerator(object):
 
     def save_on_disk(self):
         """Save the features in a Pickle file."""
+        if not os.path.isdir(self.features_dir):
+            os.makedirs(self.features_dir)
         self.features.to_pickle(self.path)
 
     def read_from_disk(self):
