@@ -162,7 +162,85 @@ def get_relative_position(pos, win_right, win_size):
 
 
 if __name__ == '__main__':
+
+    # This code reproduces the figure from numenta paper
     from ddm_project.readers.nab_dataset_reader import NABReader
+    import matplotlib.pyplot as plt
+    import matplotlib as mp
+
+    lw = 1
+    fs = 7
+    mp.rcParams["font.size"] = fs
+    mp.rcParams["axes.linewidth"] = lw
+    mp.rcParams["lines.linewidth"] = lw
+    mp.rcParams["patch.linewidth"] = lw
+    mp.rcParams["font.family"] = "serif"
+
+    x = np.arange(-5.5, 3.5, 0.001)
+
+    def score(x):
+        y = []
+        for el in x:
+            if el > -3:
+                y.append(get_raw_score(el))
+            else:
+                y.append(-1)
+        return y
+
+    y = score(x)
+
+    fig, ax = plt.subplots(1)
+
+    ax.plot(x, y)
+
+    ylims = (-1.5, 1.5)
+    ax.vlines([-3, 0], *ylims, linestyle="-.", color="C3", zorder=100)
+
+    anomalies = [-5, 0.4377, 3]
+    good = [-2, -1]
+    anomalies_score = score(anomalies)
+    good_score = score(good)
+    ax.scatter(anomalies, anomalies_score,
+               marker="X", color="C3", zorder=100)
+    ax.scatter(good, good_score,
+               marker="X", color="C2", zorder=100)
+
+    ax.annotate('Anomaly Window', xy=(-1.5, -1.2),
+                color="C3", fontsize=12, ha="center")
+
+    to_ignore = None
+    for p in zip(anomalies + good, anomalies_score + good_score):
+        ann = ax.annotate(
+            "{:.4f}".format(p[1]).replace(".0000", ".0"),
+            xy=p,
+            xytext=(p[0] + 0.1, p[1] + 0.2),
+            arrowprops=dict(facecolor='black', arrowstyle="->",
+                            shrinkA=2, shrinkB=5)
+        )
+        if p[0] == -1:
+            to_ignore = ann
+    to_ignore.set_text("ignored")
+
+    ax.set_ylim(*ylims)
+    ax.set_xlim(-5.5, 3.5)
+    ax.set_aspect(2)
+
+    fig_width = 8
+    fig_height = fig_width / 1.618
+    fig.set_size_inches(fig_width, fig_height)
+    plt.subplots_adjust(top=0.925)
+
+    # plt.show()
+    # raise SystemExit
+
+    plt.savefig("nab_anomaly_window.pdf", transparent=True, dpi=100,
+                frameon=False, bbox_inches='tight', pad_inches=0)
+    # plt.show()
+    import subprocess
+    subprocess.run(["evince", "nab_anomaly_window.pdf"], capture_output=True)
+
+    raise SystemExit
+    # ==================================================== #
 
     np.random.seed(42)
     reader = NABReader()
