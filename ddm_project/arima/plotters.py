@@ -12,7 +12,7 @@ def plot_acf(series, ax=None, lags=None, marker=None):
 
 def plot_pacf(series, ax=None, lags=None, marker=None):
     """Plot the partial autocorrelation funciton."""
-    fig = sm.graphics.tsa.plot_acf(series, ax=ax, lags=lags, marker=marker)
+    fig = sm.graphics.tsa.plot_pacf(series, ax=ax, lags=lags, marker=marker)
     return fig
 
 

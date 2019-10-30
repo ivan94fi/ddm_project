@@ -11,7 +11,9 @@ model parameters change.
 """
 
 import argparse
+import itertools
 
+import matplotlib as mp
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -58,6 +60,13 @@ if not models_to_use:
 models_classes = {iforest_name: IsolationForest, ocsvm_name: OneClassSVM}
 
 register_matplotlib_converters()
+lw = 1
+fs = 7
+mp.rcParams["font.size"] = fs
+mp.rcParams["axes.linewidth"] = lw
+mp.rcParams["lines.linewidth"] = lw
+mp.rcParams["patch.linewidth"] = lw
+mp.rcParams["font.family"] = "serif"
 
 reader = NABReader()
 reader.load_data()
@@ -129,21 +138,34 @@ if args.plot_predictions:
 
 # Plot the evolutions of metrics with different parameters for both models.
 if args.plot_metrics:
+    print(dataset_name.replace("_", "\\_"))
     for model_name, model_metrics in metrics.items():
-        nab_score = model_metrics['nab_score']
-        std_nab_score = (nab_score - nab_score.mean()) / nab_score.std()
-        model_metrics['nab_score'] = std_nab_score
-        plt.figure(figsize=(9.6, 6.0))
-        # plt.figure()
-        plt.xticks(rotation=30, ha='right', size='xx-small')
+        mx = model_metrics.max()
+        if model_name == "iforest":
+            name = "iForest"
+        else:
+            name = "OCSVM"
+        line = "& {} & {:.2f} & {:.2f} & {:.2f} & {:.2f} \\\\".format(
+            name, mx.nab_score, mx.f_score, mx.precision, mx.recall)
+        print(line)
+
+    for model_name, model_metrics in metrics.items():
+        fig, ax = plt.subplots()  # figsize=(9.6, 6.0)
+        ax.tick_params(axis='x', labelrotation=30, labelsize=7)
+        lines = []
         for c in model_metrics.columns:
-            plt.plot(c, data=model_metrics)
-        plt.grid(axis='x', color='gray',
-                 linestyle='--', linewidth=1, alpha=0.5)
-        plt.legend()
+            if c != "nab_score":
+                line = ax.plot(c, data=model_metrics)
+                lines.append(line)
+        twin_ax = ax.twinx()
+        line = twin_ax.plot("nab_score", data=model_metrics, color="C3")
+        lines.append(line)
+        lines = list(itertools.chain.from_iterable(lines))
+        ax.legend(lines, [l.get_label() for l in lines])
+        ax.grid(axis='x', color='gray',
+                linestyle='--', linewidth=1, alpha=0.5)
         fig_title = dataset_name[:-4] + ": " + model_name
-        plt.title(fig_title)
-        plt.tight_layout()
-        fig_fname = "metrics/" + dataset_name[:-4] + "_" + model_name + ".svg"
+        ax.set_title(fig_title)
+        # fig_fname = "metrics/{}_{}.svg".format(dataset_name[:-4], model_name)
         # plt.savefig(fig_fname)
 plt.show()

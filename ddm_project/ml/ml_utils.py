@@ -98,6 +98,10 @@ class MetricsGenerator(object):
         if needs_computing:
             metrics = {}
             for param_str, pred in predictions.items():
+                if len(pred) != len(gt_pred):
+                    raise ValueError("predictions must be the same size as ground truth predictions. Found {} and {}.".format(
+                        len(pred), len(gt_pred)))
+
                 nab_score = get_nab_score(gt_windows, pred)
                 metrics[param_str] = get_simple_metrics(
                     gt_pred, pred) + (nab_score,)

@@ -25,6 +25,9 @@ def get_simple_metrics(gt_pred, pred):
         The metrics as 3 float values: (precision, recall, F-score).
 
     """
+    if len(pred) != len(gt_pred):
+        raise ValueError("predictions must be the same size as ground truth predictions. Found {} and {}.".format(
+            len(pred), len(gt_pred)))
     res = precision_recall_fscore_support(gt_pred, pred, beta=1.0, labels=[-1])
     return tuple(a.item() for a in res)[:3]
 
