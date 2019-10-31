@@ -41,8 +41,14 @@ class TestResults(NamedTuple):
 
 
 def kpss(x, **kwargs):
-    """Compute KPSS test for stationarity."""
-    res = tsa.kpss(x, nlags="auto", **kwargs)
+    """
+    Compute KPSS test for stationarity.
+
+    H0: data are stationary.
+    """
+    if "nlags" not in kwargs.keys():
+        kwargs["nlags"] = "auto"
+    res = tsa.kpss(x, **kwargs)
     test_results = TestResults(
         test_name="KPSS",
         test_stat=res[0],
@@ -54,7 +60,11 @@ def kpss(x, **kwargs):
 
 
 def adf(x, **kwargs):
-    """Compute ADF test for stationarity."""
+    """
+    Compute ADF test for stationarity.
+
+    H0: a unit root is present in data.
+    """
     res = tsa.adfuller(x, **kwargs)
     test_results = TestResults(
         test_name="ADF",

@@ -13,7 +13,6 @@ Methodology:
 
 - checkresiduals: AIC_c/ljung-box/ACF/uncorrelated/zero mean
 """
-
 import argparse
 import sys
 import warnings
@@ -50,6 +49,9 @@ group.add_argument("--auto_fit", action="store_true")
 parser.add_argument('--order', nargs=3, type=int)
 parser.add_argument('--seasonal_order', nargs=3, type=int)
 parser.add_argument('--seasonal', action="store_true")
+parser.add_argument('--save', action="store_true")
+parser.add_argument('--no_plots', action="store_true")
+
 args = parser.parse_args()
 
 if args.time_plots and args.lmbda is None:
@@ -61,7 +63,7 @@ if args.order is not None:
 if args.seasonal_order is not None:
     args.seasonal_order = tuple(args.seasonal_order) + (args.period,)
 
-if args.auto_fit and args.period is None:
+if (args.auto_fit or args.decomposition) and args.period is None:
     print("Please specify period.")
     sys.exit(0)
 if args.fit and args.order is None:
@@ -87,8 +89,6 @@ df = reader.data.get(dataset_name)
 labels = reader.labels.get(dataset_name)
 labels_windows = reader.label_windows.get(dataset_name)
 
-print(df.head())
-
 # Train-test split
 train_percentage = 0.8
 train_len = int(train_percentage * len(df))
@@ -96,6 +96,7 @@ train, test = df.value[:train_len], df.value[train_len:]
 
 # Describe data
 if args.description:
+    print(df.head())
     print("Dataframe information:")
     df.info()
     print("Data description:")
@@ -106,10 +107,9 @@ if args.time_plots:
     time_plot(df.value, scale=True)
     log_value = log_transform(df.value)
     time_plot(log_value, scale=True, label="log(value)")
-    lmbda = args.lmbda
-    boxcox_value = boxcox_transform(df.value, lmbda)
+    boxcox_value = boxcox_transform(df.value, args.lmbda)
     time_plot(boxcox_value, scale=True,
-              label="boxcox({})(value)".format(lmbda))
+              label="boxcox({})(value)".format(args.lmbda))
     plt.legend()
     plt.figure()
     time_plot(df.value)
@@ -118,7 +118,7 @@ if args.time_plots:
     time_plot(log_value, label="log(value)")
     plt.legend()
     plt.figure()
-    time_plot(boxcox_value, label="boxcox({})(value)".format(lmbda))
+    time_plot(boxcox_value, label="boxcox({})(value)".format(args.lmbda))
     plt.legend()
 
 
@@ -133,6 +133,7 @@ if args.autocorr_tests:
 # ADF-KPSS unit root tests / differencing
 if args.diff_tests:
     diff = difference(df.value, order=1, seasonal_lag=None)
+    # diff = np.diff(diff)
     fig, axes = plt.subplots(2, 1, sharex=True)
     time_plot(df.value, ax=axes[0], label="original")
     time_plot(diff, ax=axes[1], label="differenced")
@@ -141,6 +142,13 @@ if args.diff_tests:
     plt.gcf().suptitle("Original data vs differenced data")
     adf(diff).format()
     kpss(diff).format()
+    lags = 50
+    fig, axes = plt.subplots(2, 1, sharex=True)
+    plot_acf(diff, lags=lags, ax=axes[0])
+    plot_pacf(diff, lags=lags, ax=axes[1])
+    fig.suptitle("ACF-PACF after differencing")
+    box_ljung(diff, nlags=10).format()
+
 
 # Seasonality decomposition
 if args.decomposition:
@@ -186,10 +194,10 @@ if args.fit or args.auto_fit:
                           seasonal_order=args.seasonal_order)
             arima.fit(train)
 
-        residuals = arima.resid()
-        print("train lengths: data={} resid={}".format(
-            train_len, residuals.shape[0]))
-        len_delta = train_len - residuals.shape[0]
+    residuals = arima.resid()
+    print("train lengths: data={} resid={}".format(
+        train_len, residuals.shape[0]))
+    len_delta = train_len - residuals.shape[0]
 
     # Diagnostics plot
     arima.plot_diagnostics(lags=50)
@@ -226,4 +234,28 @@ if args.fit or args.auto_fit:
     plt.legend()
     plt.gcf().suptitle("Fitted values and forecasts")
 
-plt.show()
+
+if args.save:
+    import yaml
+    print("Saving configs...")
+    fname = "arima_cfg.yml"  # "cfg_{}.yml".format(dataset_name[:-4])
+    try:
+        with open(fname, "r") as f:
+            arima_configs = yaml.load(f)
+    except IOError:
+        with open(fname, "w+") as f:
+            arima_configs = yaml.load(f)
+        arima_configs = {}
+    config = dict(
+        period=args.period,
+        lmbda=args.lmbda,
+        order=args.order,
+        seasonal_order=args.seasonal_order
+    )
+    arima_configs.setdefault(dataset_name, {})
+    arima_configs[dataset_name] = config
+    with open(fname, "w") as f:
+        yaml.dump(arima_configs, f, default_flow_style=False)
+
+if not args.no_plots:
+    plt.show()
