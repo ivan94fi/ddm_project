@@ -37,3 +37,20 @@ def trend_strength(x, **kwargs):
     residual_std = decomposition.resid.std()
     strength = residual_std / (decomposition.trend.std() + residual_std)
     return max(0, 1 - strength) ** 2
+
+
+if __name__ == '__main__':
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    # Demo of shared x-axis for acf-pacf subplots.
+    x = np.random.rand(100)
+    x = pd.DataFrame(data=x, index=pd.DatetimeIndex(
+        start="1/1/1990", periods=100, freq="M"))
+    decomp = decompose(x, period=5)
+    fig = decomp.plot()
+    axes = fig.axes
+    for i in range(len(axes) - 1):
+        axes[i].get_shared_x_axes().join(axes[i], axes[i + 1])
+    plt.show()

@@ -5,6 +5,4 @@ generated_features/
 generated_metrics/
 generated_predictions/
 predicted_anomalies_plots/
-
-
-arima.pkl
+fitted_models/

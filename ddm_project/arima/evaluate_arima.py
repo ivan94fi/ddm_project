@@ -57,10 +57,24 @@ def get_arima_predictions(
 
 
 if __name__ == "__main__":
+    import yaml
+    import clipboard
+    import subprocess
+    import matplotlib as mp
+
+    lw = 1
+    fs = 7
+    mp.rcParams["font.size"] = fs
+    mp.rcParams["axes.linewidth"] = lw
+    mp.rcParams["lines.linewidth"] = lw
+    mp.rcParams["patch.linewidth"] = lw
+    mp.rcParams["font.family"] = "serif"
+
     register_matplotlib_converters()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset_index", type=int, choices=range(6))
+    parser.add_argument("-w", "--overwrite", action="store_true")
     args = parser.parse_args()
 
     dataset_names = [
@@ -74,6 +88,18 @@ if __name__ == "__main__":
 
     dataset_name = dataset_names[args.dataset_index]
     print("Chosen dataset:", dataset_name)
+    try:
+        with open("saved_arima_params.yml", "r") as f:
+            arima_configs = yaml.load(f)
+    except IOError:
+        print("Params file not found")
+        raise
+
+    saved_parameters = arima_configs.get(dataset_name)
+    if saved_parameters is None:
+        raise ValueError(
+            "There are no saved parameters for {}".format(dataset_name)
+        )
 
     reader = NABReader()
     reader.load_data()
@@ -88,17 +114,22 @@ if __name__ == "__main__":
     whole_df = df.copy()
     df = df.iloc[10:, :]
 
-    fname = "arima.pkl"
-    if not os.path.isfile(fname):
+    models_dir = "fitted_models"
+    fname = "{}_model.pkl".format(dataset_name[:-4])
+    fpath = os.path.join(models_dir, fname)
+    if not os.path.isfile(fpath) or args.overwrite:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            arima = ARIMA(order=(4, 1, 4), seasonal_order=None)
-            # arima = ARIMA(
-            #     order=arima.order, seasonal_order=arima.seasonal_order)
+            arima = ARIMA(
+                order=saved_parameters["order"],
+                seasonal_order=saved_parameters["seasonal_order"]
+            )
             arima.fit(df.value)
-            joblib.dump(arima, fname, compress=3)
+            print("Saving fitted model on disk")
+            joblib.dump(arima, fpath, compress=3)
     else:
-        arima = joblib.load(fname)
+        print("Reading model from disk")
+        arima = joblib.load(fpath)
 
     gt_pred, gt_windows = get_gt_arrays(
         df.index, df.index, labels, labels_windows
@@ -112,23 +143,40 @@ if __name__ == "__main__":
     alpha = 0.15
     pred = get_arima_predictions(arima.resid(), window_size, alpha)
     print("Anomalies number:", pred[pred == -1].shape[0])
+    len_delta = len(df.value) - pred.shape[0]
 
     nab_score = get_nab_score(gt_windows, pred)
-    simple_metrics = get_simple_metrics(gt_pred[1:], pred)
+    simple_metrics = get_simple_metrics(gt_pred[len_delta:], pred)
     metrics = simple_metrics + (nab_score,)
     metrics = Metrics(*metrics)
 
-    anomalies = df.value[1:][pred == -1]
+    anomalies = df.value[len_delta:][pred == -1]
     ax = make_predictions_plots(
         whole_df, df, labels, labels_windows, "", anomalies, ""
     )
     line = "& {} & {:.2f} & {:.2f} & {:.2f} & {:.2f} \\\\".format(
-        "ARIMA",
+        "\\emph{ARIMA}",
         metrics.nab_score,
         metrics.f_score,
         metrics.precision,
         metrics.recall,
     )
-    print(line)
+    clipboard.copy(line)
+    print("Copied the following table line to clipboard: {}".format(line))
 
+    fig = plt.gcf()
+    fig.suptitle(
+        "{} - ARIMA({},{},{})".format(
+            dataset_name[:-4],
+            *saved_parameters["order"]
+        ), fontsize=16)
+    fig_width = 8
+    fig_height = fig_width / 1.618
+    fig.set_size_inches(fig_width, fig_height)
+    plt.subplots_adjust(top=0.92)
     plt.show()
+    # Save figure with appropriate name then show it with evince.
+    # fig_fname = "predictions_{}_arima.pdf".format(args.dataset_index)
+    # plt.savefig(fig_fname, transparent=True, dpi=100,
+    #             frameon=False, bbox_inches='tight', pad_inches=0)
+    # subprocess.run(["evince", fig_fname], capture_output=True)

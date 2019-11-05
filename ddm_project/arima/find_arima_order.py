@@ -89,6 +89,9 @@ df = reader.data.get(dataset_name)
 labels = reader.labels.get(dataset_name)
 labels_windows = reader.label_windows.get(dataset_name)
 
+# Transform data with appropriate box-cox transform
+# df.value = boxcox_transform(df.value, args.lmbda)
+
 # Train-test split
 train_percentage = 0.8
 train_len = int(train_percentage * len(df))
@@ -132,8 +135,10 @@ if args.autocorr_tests:
 
 # ADF-KPSS unit root tests / differencing
 if args.diff_tests:
+    adf(df.value).format()
+    kpss(df.value).format()
+
     diff = difference(df.value, order=1, seasonal_lag=None)
-    # diff = np.diff(diff)
     fig, axes = plt.subplots(2, 1, sharex=True)
     time_plot(df.value, ax=axes[0], label="original")
     time_plot(diff, ax=axes[1], label="differenced")
@@ -166,12 +171,22 @@ if args.decomposition:
     stl_decomposition = decompose(df.value, period=args.period)
     robust_stl_decomposition = decompose(
         df.value, robust=True, period=args.period)
-    stl_decomposition.plot()
-    plt.gcf().suptitle('Non-robust STL seasonality decomposition')
-    ma_decomposition.plot()
-    plt.gcf().suptitle('Moving average seasonality decomposition')
-    robust_stl_decomposition.plot()
-    plt.gcf().suptitle('Robust STL seasonality decomposition')
+
+    suptitles = ['Non-robust STL seasonality decomposition',
+                 'Moving average seasonality decomposition',
+                 'Robust STL seasonality decomposition',
+                 ]
+    decompositions = [stl_decomposition,
+                      ma_decomposition,
+                      robust_stl_decomposition,
+                      ]
+    for i in range(len(decompositions)):
+        fig = decompositions[i].plot()
+        fig.suptitle(suptitles[i])
+        axes = fig.axes
+        for i in range(len(axes) - 1):
+            axes[i].get_shared_x_axes().join(axes[i], axes[i + 1])
+
 
 # Fit ARIMA model
 if args.fit or args.auto_fit:
@@ -186,13 +201,14 @@ if args.fit or args.auto_fit:
             error_action="ignore",
             suppress_warnings=True,
         )
-        print(arima.summary())
     elif args.fit:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             arima = ARIMA(order=args.order,
                           seasonal_order=args.seasonal_order)
             arima.fit(train)
+
+    print(arima.summary())
 
     residuals = arima.resid()
     print("train lengths: data={} resid={}".format(
@@ -237,8 +253,9 @@ if args.fit or args.auto_fit:
 
 if args.save:
     import yaml
+    from pprint import pprint
     print("Saving configs...")
-    fname = "arima_cfg.yml"  # "cfg_{}.yml".format(dataset_name[:-4])
+    fname = "saved_arima_params.yml"
     try:
         with open(fname, "r") as f:
             arima_configs = yaml.load(f)
@@ -252,6 +269,7 @@ if args.save:
         order=args.order,
         seasonal_order=args.seasonal_order
     )
+    pprint(config)
     arima_configs.setdefault(dataset_name, {})
     arima_configs[dataset_name] = config
     with open(fname, "w") as f:

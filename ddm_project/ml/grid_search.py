@@ -135,12 +135,36 @@ if args.plot_predictions:
             ax = make_predictions_plots(df, tdf, labels, labels_windows,
                                         model_name, anomalies, param_str)
             plt.show()
+            #  Used to plot the final figures in report. Substitute to the the
+            # three preceding lines.
+            # if param_str == "contamination_0.0050":
+            #     anomalies = tdf.value[pred == -1]
+            #     ax = make_predictions_plots(df, tdf, labels, labels_windows,
+            #                                 model_name, anomalies, param_str)
+            #     fig_fname = "predictions_3_iforest.pdf"
+            #     fig = plt.gcf()
+            #     ax.set_title("")
+            #     fig.suptitle(dataset_name[:-4] +
+            #                  " - iForest(nu=0.005)", fontsize=16)
+            #     fig_width = 8
+            #     fig_height = fig_width / 1.618
+            #     fig.set_size_inches(fig_width, fig_height)
+            #     plt.subplots_adjust(top=0.92)
+            #     # plt.show()
+            #     # raise SystemExit
+            #     plt.savefig(fig_fname, transparent=True, dpi=100,
+            #                 frameon=False, bbox_inches='tight', pad_inches=0)
+            #     import subprocess
+            #     subprocess.call(["evince", fig_fname])
+            #     raise SystemExit
+
 
 # Plot the evolutions of metrics with different parameters for both models.
 if args.plot_metrics:
     print(dataset_name.replace("_", "\\_"))
     for model_name, model_metrics in metrics.items():
         mx = model_metrics.max()
+        print(model_metrics.idxmax())
         if model_name == "iforest":
             name = "iForest"
         else:

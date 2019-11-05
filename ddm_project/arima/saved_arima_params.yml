@@ -1,0 +1,52 @@
+ec2_cpu_utilization_fe7f93.csv:
+  lmbda: null
+  order: !!python/tuple
+  - 4
+  - 1
+  - 4
+  period: null
+  seasonal_order: null
+elb_request_count_8c0756.csv:
+  lmbda: 0.1
+  order: !!python/tuple
+  - 0
+  - 1
+  - 2
+  period: 12
+  seasonal_order: null
+grok_asg_anomaly.csv:
+  lmbda: null
+  order: !!python/tuple
+  - 2
+  - 1
+  - 2
+  period: 12
+  seasonal_order: null
+iio_us-east-1_i-a2eb1cd9_NetworkIn.csv:
+  lmbda: null
+  order: !!python/tuple
+  - 4
+  - 1
+  - 4
+  period: 12
+  seasonal_order: null
+machine_temperature_system_failure.csv:
+  lmbda: null
+  order: !!python/tuple
+  - 1
+  - 1
+  - 2
+  period: 12
+  seasonal_order: null
+rds_cpu_utilization_e47b3b.csv:
+  lmbda: null
+  order: !!python/tuple
+  - 4
+  - 1
+  - 2
+  period: 12
+  seasonal_order: !!python/tuple
+  - 2
+  - 0
+  - 2
+  - 12
