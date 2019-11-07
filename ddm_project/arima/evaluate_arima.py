@@ -89,7 +89,7 @@ if __name__ == "__main__":
     print("Chosen dataset:", dataset_name)
     try:
         with open("saved_arima_params.yml", "r") as f:
-            arima_configs = yaml.load(f)
+            arima_configs = yaml.load(f,Loader=yaml.FullLoader)
     except IOError:
         print("Params file not found")
         raise
