@@ -19,16 +19,23 @@ The main module is `ddm_project` and the structure of the submodules is the foll
 
 ## Installation
 
-The package requires Python 3.7 to run. To install the package it is necessary to change the path of the datasets folder in the `settings.py` file: just change the string assinged to the variable `data_root_dir`.
+The package requires Python 3.7 to run. To install the package it is necessary to change the path of the datasets folder in the `settings.py` file: just change the string assigned to the variable `data_root_dir`.
 
-Once the variable points to a valid path, that is to the parent directory of `datasets`, it is possible to install the package by running the following command:
+Then it is necessary to install the dependencies of the package, which are specified in `requirements.txt`. To do so, first create a new environment and then install the packages in the new environment:
+```shell
+conda create --no-default-packages -n ddm_project_env python=3.7 pip==19.2.2
+conda activate ddm_project_env
+pip install --r requirements.txt
+```
+The preceding commands work if Anaconda is installed on the system and `conda` is in path. It is also possible to do the same steps by using venv if `conda` is not available.
+Once the variable points to a valid path, that is, to the parent directory of `datasets`, and the dependencies are installed, it is possible to install the package by running the following command:
 ```shell
 # First, ensure that you are in the root of the repository, the directory containing setup.py
-python -m pip install .
+pip install . # Please note the "dot"
 ```
 
 If the installation succeeds you will be able to import `ddm_project` from anywhere in your system:
-```
+```shell
 python -c "import ddm_project"
 ```
 
@@ -56,5 +63,4 @@ Otherwise, `grid_search.py` is capable of extracting features for the selected d
 python grid_search.py 0 --iforest --ocsvm --plot_metrics
 ```
 The above execution selects the dataset with index `0`, includes both the Isolation Forest model and the One-Class SVM model, and asks the script to plot how the metrics change with the various grid search parameters. It is possible to use the `--plot_predictions` switch to also plot the predicted anomalies on the data, together with the ground truth anomalies and anomaly windows.
-
 
