@@ -114,7 +114,7 @@ if __name__ == "__main__":
     df = df.iloc[10:, :]
 
     models_dir = "fitted_models"
-    if not os.isdir(models_dir):
+    if not os.path.isdir(models_dir):
         os.mkdir(models_dir)
     fname = "{}_model.pkl".format(dataset_name[:-4])
     fpath = os.path.join(models_dir, fname)

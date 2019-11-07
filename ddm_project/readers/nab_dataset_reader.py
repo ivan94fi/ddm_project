@@ -9,10 +9,10 @@ realAWSCloudwatch/iio_us-east-1_i-a2eb1cd9_NetworkIn.csv
 import collections
 import glob
 import json
+import os
 import re
 
 import pandas as pd
-
 from ddm_project.settings import (
     nab_data_dir, nab_label_path, nab_label_windows_path
 )
@@ -55,13 +55,14 @@ class NABReader(object):
      default data.
     """
 
-    fname_pattern = re.compile(r'\/([\d\w_-]*\.csv)')
+    fname_pattern = re.compile(os.sep + r'([\d\w_-]*\.csv)')
 
     def __init__(self, paths=None):
 
         if not paths:
-            paths = glob.glob(nab_data_dir + "/realAWSCloudwatch/*.csv") \
-                + glob.glob(nab_data_dir + "/realKnownCause/*.csv")
+            glob_aws = os.path.join(nab_data_dir, "realAWSCloudwatch", "*.csv")
+            glob_rkc = os.path.join(nab_data_dir, "realKnownCause", "*.csv")
+            paths = glob.glob(glob_aws) + glob.glob(glob_rkc)
 
         self.paths = paths
         self.data = None

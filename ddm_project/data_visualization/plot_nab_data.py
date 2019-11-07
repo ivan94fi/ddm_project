@@ -20,36 +20,38 @@ realKnownCause/ambient_temperature_system_failure.csv ->
 
 import glob
 import json
+import os
 import re
 from collections import defaultdict
 from pprint import pprint  # noqa
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from pandas.plotting import register_matplotlib_converters
-
 from ddm_project.settings import datasets_dir
+from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 
 
 def get_key(path):
     """Get key for `labels` dict."""
-    return re.search(r"[^\/]+\/[^\/]+\.csv", path).group(0)
+    return re.search(r"[^" + os.sep + "]+" + os.sep + r"[^" + os.sep + "]+\.csv", path).group(0)
 
 
-root_dir = datasets_dir + "/nab_dataset/data"
-label_dir = datasets_dir + "/nab_dataset/labels"
+root_dir = os.path.join(datasets_dir, "nab_dataset", "data")
+label_dir = os.path.join(datasets_dir, "nab_dataset", "labels")
 label_file = "combined_labels.json"
 
-label_path = label_dir + "/" + label_file
+label_path = label_dir + os.sep + label_file
 with open(label_path) as f:
     labels = json.load(f)
 
-data_paths = glob.glob(root_dir + "/realAWSCloudwatch/*.csv")
-data_paths += glob.glob(root_dir + "/realKnownCause/*.csv")
+data_paths = glob.glob(root_dir + os.sep
+                       + "realAWSCloudwatch" + os.sep + "*.csv")
+data_paths += glob.glob(root_dir + os.sep
+                        + "realKnownCause" + os.sep + "*.csv")
 
-pattern = re.compile(r'\/([\d\w_-]*)\.')
+pattern = re.compile(os.sep + r'([\d\w_-]*)\.')
 data_filenames = [re.search(pattern, p).group(1) for p in data_paths]
 
 # ===========================
@@ -132,7 +134,7 @@ for i, path in enumerate(data_paths):
                         color='r', alpha=0.5)
             ax.set_ylim(y_min, y_max)
 
-        ax.set_title(name.replace('/', ' \n '), fontsize=7)
+        ax.set_title(name.replace(os.sep, ' \n '), fontsize=7)
         ax.xaxis.set_ticklabels([])
         ax.xaxis.set_visible(False)
         ax.tick_params(axis='both', which='major', labelsize=6)
