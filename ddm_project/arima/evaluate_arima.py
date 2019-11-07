@@ -8,12 +8,11 @@ import warnings
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
-from pandas.plotting import register_matplotlib_converters
-from pmdarima.arima import ARIMA
-
 from ddm_project.metrics.metrics import get_nab_score, get_simple_metrics
 from ddm_project.readers.nab_dataset_reader import NABReader
 from ddm_project.utils.utils import get_gt_arrays, make_predictions_plots
+from pandas.plotting import register_matplotlib_converters
+from pmdarima.arima import ARIMA
 
 
 def get_arima_predictions(
@@ -115,6 +114,8 @@ if __name__ == "__main__":
     df = df.iloc[10:, :]
 
     models_dir = "fitted_models"
+    if not os.isdir(models_dir):
+        os.mkdir(models_dir)
     fname = "{}_model.pkl".format(dataset_name[:-4])
     fpath = os.path.join(models_dir, fname)
     if not os.path.isfile(fpath) or args.overwrite:

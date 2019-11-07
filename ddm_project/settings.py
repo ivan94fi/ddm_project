@@ -4,8 +4,22 @@ settings.py.
 Define global variables.
 """
 import os
+import sys
 
-data_root_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+#####################################################
+# Specify the absolute path to the parent directory of the `datasets` directory
+data_root_dir = "/home/ivan94fi/Documents/DDM"
+#####################################################
+
+if not os.path.isdir(data_root_dir):
+    print("Error. The base directory for datasets does not exist:")
+    print(data_root_dir)
+    print(
+        "Please change the directory in settings.py to a valid one and"
+        " reinstall the package."
+    )
+    sys.exit(1)
+
 datasets_dir = os.path.join(data_root_dir, "datasets")
 
 # NAB dataset
