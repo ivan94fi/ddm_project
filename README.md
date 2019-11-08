@@ -11,7 +11,7 @@ The main module is `ddm_project` and the structure of the submodules is the foll
 `ddm_project`</br>
 &nbsp;&nbsp;&nbsp;├── `arima`: scripts to create results for ARIMA models.</br>
 &nbsp;&nbsp;&nbsp;├── `data_visualization`: scripts to visualize the datasets.</br>
-&nbsp;&nbsp;&nbsp;├── `metrics`: functions for metris calculation.</br>
+&nbsp;&nbsp;&nbsp;├── `metrics`: functions for metrics calculation.</br>
 &nbsp;&nbsp;&nbsp;├── `ml`: scripts to create results for machine learning models.</br>
 &nbsp;&nbsp;&nbsp;├── `readers`: classes for data and labels reading.</br>
 &nbsp;&nbsp;&nbsp;├── `settings.py`: file containing global variable definitions.</br>
@@ -27,7 +27,7 @@ conda create --no-default-packages -n ddm_project_env python=3.7 pip==19.2.2
 conda activate ddm_project_env
 pip install --r requirements.txt
 ```
-The preceding commands work if Anaconda is installed on the system and `conda` is in path. It is also possible to do the same steps by using venv if `conda` is not available.
+The preceding commands work if Anaconda is installed on the system and `conda` is in path. It is also possible to do the same steps by using `venv` if `conda` is not available.
 Once the variable points to a valid path, that is, to the parent directory of `datasets`, and the dependencies are installed, it is possible to install the package by running the following command:
 ```shell
 # First, ensure that you are in the root of the repository, the directory containing setup.py
